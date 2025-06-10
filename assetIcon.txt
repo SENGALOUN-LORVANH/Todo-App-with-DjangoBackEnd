@@ -1,0 +1,47 @@
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Image } from 'react-native';
+import HomeScreen from '../screens/HomeScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+
+const Tab = createBottomTabNavigator();
+
+export default function TabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconSource;
+
+          if (route.name === 'Home') {
+            iconSource = focused
+              ? require('../assets/icons/home-active.png') // Active state icon
+              : require('../assets/icons/home.png'); // Inactive state icon
+          } else if (route.name === 'Profile') {
+            iconSource = focused
+              ? require('../assets/icons/profile-active.png') // Active state icon
+              : require('../assets/icons/profile.png'); // Inactive state icon
+          }
+
+          return (
+            <Image
+              source={iconSource}
+              style={{
+                width: 24,
+                height: 24,
+                tintColor: color, // Applies the active/inactive tint color
+                opacity: focused ? 1 : 0.6, // Optional: adjust opacity for focus state
+              }}
+            />
+          );
+        },
+        tabBarActiveTintColor: '#0066FF',
+        tabBarInactiveTintColor: '#888',
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+}
