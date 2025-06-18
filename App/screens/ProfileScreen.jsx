@@ -1,18 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function ProfileScreen() {
-  const handleBioPress = () => {
-    console.log('Navigating to Bio edit screen...');
-  };
-
-  const handleChangePasswordPress = () => {
-    console.log('Navigating to Change Password screen...');
-  };
-
-  const handleLogoutPress = () => {
-    console.log('Logging out...');
+export default function ProfileScreen({ navigation }) {
+  const handleLogoutPress = async () => {
+    await AsyncStorage.removeItem('access_token');
+    await AsyncStorage.removeItem('refresh_token');
+    navigation.navigate('Login');
   };
 
   return (
@@ -26,12 +21,12 @@ export default function ProfileScreen() {
       <Text style={styles.name}>Same smith</Text>
       <Text style={styles.email}>Same99@gmail.com</Text>
 
-      <TouchableOpacity style={styles.option} onPress={handleBioPress}>
+      <TouchableOpacity style={styles.option}>
         <Text style={styles.optionText}>Bio</Text>
         <Ionicons name="chevron-forward" size={20} color="#888" />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.option} onPress={handleChangePasswordPress}>
+      <TouchableOpacity style={styles.option}>
         <Text style={styles.optionText}>Change password</Text>
         <Ionicons name="chevron-forward" size={20} color="#888" />
       </TouchableOpacity>

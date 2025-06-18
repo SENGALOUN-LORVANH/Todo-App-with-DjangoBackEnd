@@ -1,44 +1,144 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { register } from '../services/api';
 
 const RegisterScreen = ({ navigation }) => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleRegister = () => {
-    // Add registration logic here
-    console.log('Registering with:', email, password);
-    navigation.navigate('App');
+  const handleRegister = async () => {
+    if (!username || !password) {
+      Alert.alert('Error', 'Username and password are required.');
+      return;
+    }
+
+    try {
+      const res = await register({ username, email, password });
+      const { access, refresh } = res.data;
+
+      await AsyncStorage.setItem('access_token', access);
+      await AsyncStorage.setItem('refresh_token', refresh);
+      navigation.navigate('App');
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      Alert.alert('Registration Failed', 'Username may be taken.');
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <Text style={styles.title}>Register</Text>
+      <Text style={styles.subtitle}>Create your account</Text>
+
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+        placeholderTextColor="#aaa"
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email (optional)"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
+        keyboardType="email-address"
+        placeholderTextColor="#aaa"
       />
+
       <TextInput
         style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        placeholderTextColor="#aaa"
       />
-      <Button title="Register" onPress={handleRegister} />
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.link}>Already have an account? Login here</Text>
+
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
-    </View>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.linkText}>
+          Already have an account? <Text style={styles.link}>Login here</Text>
+        </Text>
+      </TouchableOpacity>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  input: { height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, padding: 10 },
-  link: { color: '#0066FF', textAlign: 'center', marginTop: 10 },
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 30,
+  },
+  input: {
+    width: '100%',
+    height: 48,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    fontSize: 16,
+  },
+  button: {
+    width: '100%',
+    backgroundColor: '#0066FF',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  linkText: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#555',
+  },
+  link: {
+    color: '#0066FF',
+    fontWeight: '600',
+  },
 });
+
 
 export default RegisterScreen;

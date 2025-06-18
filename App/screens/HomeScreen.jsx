@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import TaskInput from '../components/TaskInput';
 import TodoItem from '../components/TodoItem';
+import { getTasks, createTask, deleteTask as deleteTaskAPI } from '../services/api';
 
 export default function HomeScreen() {
-  const [todos, setTodos] = useState([
-    'This List item that I have added...',
-  ]);
+  const [todos, setTodos] = useState([]);
 
-  const addTodo = (text) => {
-    if (text.trim()) {
-      setTodos([...todos, text]);
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const res = await getTasks();
+      setTodos(res.data);
+    } catch (error) {
+      console.error('Failed to fetch tasks:', error);
     }
   };
 
-  const toggleTodo = (index) => {
-    console.log('Todo toggled at index:', index);
+  const addTodo = async (text) => {
+    if (text.trim()) {
+      try {
+        const res = await createTask({ title: text });
+        setTodos([...todos, res.data]);
+      } catch (error) {
+        console.error('Failed to create task:', error);
+      }
+    }
   };
 
-  const deleteTodo = (index) => {
-    setTodos(todos.filter((_, i) => i !== index));
+  const deleteTodo = async (index) => {
+    const task = todos[index];
+    try {
+      await deleteTaskAPI(task.id);
+      setTodos(todos.filter((_, i) => i !== index));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    }
   };
 
   return (
@@ -32,12 +51,12 @@ export default function HomeScreen() {
         data={todos}
         renderItem={({ item, index }) => (
           <TodoItem
-            text={item}
-            onToggle={() => toggleTodo(index)}
+            text={item.title}
+            onToggle={() => {}}
             onDelete={() => deleteTodo(index)}
           />
         )}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item, index) => item.id?.toString() || index.toString()}
         style={styles.list}
       />
     </View>

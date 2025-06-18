@@ -1,44 +1,93 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { login } from '../services/api'; // uses { username, password }
 
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    
-    console.log('Logging in with:', email, password);
-    navigation.navigate('App');
+  const handleLogin = async () => {
+    if (!username || !password) {
+      Alert.alert('Error', 'Please enter both username and password.');
+      return;
+    }
+
+    try {
+      const res = await login({ username, password });
+      const { access, refresh } = res.data;
+      await AsyncStorage.setItem('access_token', access);
+      await AsyncStorage.setItem('refresh_token', refresh);
+      navigation.navigate('App');
+    } catch (err) {
+      console.log(err.response?.data || err.message);
+      Alert.alert('Login Failed', 'Invalid username or password.');
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <Text style={styles.title}>Login</Text>
+      <Text style={styles.subtitle}>Enter your credentials to continue</Text>
+
       <TextInput
         style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
         autoCapitalize="none"
+        placeholderTextColor="#aaa"
       />
+
       <TextInput
         style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        placeholderTextColor="#aaa"
       />
-      <Button title="Login" onPress={handleLogin} />
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.link}>Don't have an account? Register here</Text>
+
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
-    </View>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.linkText}>
+          Don’t have an account? <Text style={styles.link}>Register here</Text>
+        </Text>
+      </TouchableOpacity>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  input: { height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, padding: 10 },
-  link: { color: '#0066FF', textAlign: 'center', marginTop: 10 },
+  container: { flex: 1, backgroundColor: '#F9FAFB', justifyContent: 'center', paddingHorizontal: 30 },
+  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', color: '#333' },
+  subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 30 },
+  input: {
+    height: 48, backgroundColor: '#fff', borderRadius: 12,
+    paddingHorizontal: 16, marginBottom: 15, borderWidth: 1, borderColor: '#ddd', fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#0066FF', paddingVertical: 14,
+    borderRadius: 12, alignItems: 'center', marginBottom: 20,
+  },
+  buttonText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  linkText: { textAlign: 'center', fontSize: 14, color: '#555' },
+  link: { color: '#0066FF', fontWeight: '600' },
 });
 
 export default LoginScreen;
