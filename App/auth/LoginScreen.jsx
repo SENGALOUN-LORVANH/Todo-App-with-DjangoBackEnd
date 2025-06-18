@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   TextInput,
@@ -9,27 +9,24 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login } from '../services/api'; // uses { username, password }
+import { AuthContext } from '../context/AuthContext';
 
-const LoginScreen = ({ navigation }) => {
+export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { handleLogin } = useContext(AuthContext);
 
-  const handleLogin = async () => {
+  const onLogin = async () => {
     if (!username || !password) {
       Alert.alert('Error', 'Please enter both username and password.');
       return;
     }
 
     try {
-      const res = await login({ username, password });
-      const { access, refresh } = res.data;
-      await AsyncStorage.setItem('access_token', access);
-      await AsyncStorage.setItem('refresh_token', refresh);
+      await handleLogin({ username, password });
       navigation.navigate('App');
-    } catch (err) {
-      console.log(err.response?.data || err.message);
+    } catch (error) {
+      console.log(error.message);
       Alert.alert('Login Failed', 'Invalid username or password.');
     }
   };
@@ -50,7 +47,6 @@ const LoginScreen = ({ navigation }) => {
         autoCapitalize="none"
         placeholderTextColor="#aaa"
       />
-
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -59,8 +55,7 @@ const LoginScreen = ({ navigation }) => {
         secureTextEntry
         placeholderTextColor="#aaa"
       />
-
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity style={styles.button} onPress={onLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
@@ -71,7 +66,7 @@ const LoginScreen = ({ navigation }) => {
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB', justifyContent: 'center', paddingHorizontal: 30 },
@@ -89,5 +84,3 @@ const styles = StyleSheet.create({
   linkText: { textAlign: 'center', fontSize: 14, color: '#555' },
   link: { color: '#0066FF', fontWeight: '600' },
 });
-
-export default LoginScreen;

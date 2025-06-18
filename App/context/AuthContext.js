@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login, refreshToken, getUser } from '../services/api'; 
+import { login, refreshToken, getUser } from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(true);
           setUsername(storedUsername);
         } else {
-          await AsyncStorage.removeItem('access_token'); 
+          await AsyncStorage.removeItem('access_token');
           await AsyncStorage.removeItem('username');
         }
       } catch (error) {
@@ -34,20 +34,24 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogin = async (credentials) => {
     try {
+      console.log('Attempting login with:', credentials);
       const response = await login(credentials);
+      console.log('Login response:', response.data);
       if (response.data.access && response.data.refresh) {
         await AsyncStorage.setItem('access_token', response.data.access);
         await AsyncStorage.setItem('refresh_token', response.data.refresh);
         const userResponse = await getUser();
+        console.log('User response:', userResponse.data);
         const user = userResponse.data;
         await AsyncStorage.setItem('username', user.username);
         setUsername(user.username);
         setIsAuthenticated(true);
+        console.log('Authenticated successfully');
       } else {
         throw new Error('Invalid login response');
       }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Login failed:', error.response ? error.response.data : error.message);
       throw error;
     }
   };
@@ -72,7 +76,7 @@ export const AuthProvider = ({ children }) => {
           const response = await refreshToken(refreshTokenValue);
           if (response.data.access) {
             await AsyncStorage.setItem('access_token', response.data.access);
-            setIsAuthenticated(true); // Ensure re-authentication
+            setIsAuthenticated(true);
           } else {
             throw new Error('Invalid refresh response');
           }

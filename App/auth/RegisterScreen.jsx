@@ -18,8 +18,15 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
 
   const handleRegister = async () => {
-    if (!username || !password) {
-      Alert.alert('Error', 'Username and password are required.');
+    if (!username || !email || !password) {
+      Alert.alert('Error', 'Username, email, and password are required.');
+      return;
+    }
+
+    // Optional: basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
       return;
     }
 
@@ -32,7 +39,7 @@ const RegisterScreen = ({ navigation }) => {
       navigation.navigate('App');
     } catch (err) {
       console.error(err.response?.data || err.message);
-      Alert.alert('Registration Failed', 'Username may be taken.');
+      Alert.alert('Registration Failed', 'Username or email may already be taken.');
     }
   };
 
@@ -55,7 +62,7 @@ const RegisterScreen = ({ navigation }) => {
 
       <TextInput
         style={styles.input}
-        placeholder="Email (optional)"
+        placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -139,6 +146,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
 
 export default RegisterScreen;
