@@ -1,62 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import TaskInput from '../components/TaskInput';
 import TodoItem from '../components/TodoItem';
-import { getTasks, createTask, deleteTask as deleteTaskAPI } from '../services/api';
+import { AuthContext } from '../context/AuthContext';
+import { getTasks, createTask, updateTask, deleteTask } from '../services/api';
 
 export default function HomeScreen() {
-  const [todos, setTodos] = useState([]);
-
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState('');
+  const { isAuthenticated } = useContext(AuthContext);
 
   const fetchTasks = async () => {
     try {
-      const res = await getTasks();
-      setTodos(res.data);
-    } catch (error) {
-      console.error('Failed to fetch tasks:', error);
+      const response = await getTasks();
+      setTasks(response.data);
+    } catch (err) {
+      setError('Failed to fetch tasks');
     }
   };
 
-  const addTodo = async (text) => {
-    if (text.trim()) {
-      try {
-        const res = await createTask({ title: text });
-        setTodos([...todos, res.data]);
-      } catch (error) {
-        console.error('Failed to create task:', error);
-      }
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchTasks();
     }
-  };
+  }, [isAuthenticated]);
 
-  const deleteTodo = async (index) => {
-    const task = todos[index];
+  const addTask = async (taskData) => {
     try {
-      await deleteTaskAPI(task.id);
-      setTodos(todos.filter((_, i) => i !== index));
-    } catch (error) {
-      console.error('Failed to delete task:', error);
+      await createTask(taskData);
+      setError('');
+      fetchTasks();
+    } catch (err) {
+      setError('Failed to create task');
+    }
+  };
+
+  const updateExistingTask = async (id, taskData) => {
+    try {
+      await updateTask(id, taskData);
+      setError('');
+      fetchTasks();
+    } catch (err) {
+      setError('Failed to update task');
+    }
+  };
+
+  const deleteExistingTask = async (id) => {
+    try {
+      await deleteTask(id);
+      setError('');
+      fetchTasks();
+    } catch (err) {
+      setError('Failed to delete task');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Todo-App</Text>
+      <Text style={styles.title}>Todo App</Text>
       <Text style={styles.subtitle}>Welcome to our app!</Text>
-      <TaskInput onAddTodo={addTodo} />
-      <Text style={styles.listTitle}>List to do</Text>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <TaskInput onAddTask={addTask} />
+      <Text style={styles.listTitle}>Tasks</Text>
       <FlatList
-        data={todos}
-        renderItem={({ item, index }) => (
+        data={tasks}
+        renderItem={({ item }) => (
           <TodoItem
-            text={item.title}
-            onToggle={() => {}}
-            onDelete={() => deleteTodo(index)}
+            task={item}
+            onUpdate={updateExistingTask}
+            onDelete={deleteExistingTask}
           />
         )}
-        keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+        keyExtractor={(item) => item.id.toString()}
         style={styles.list}
       />
     </View>
@@ -89,5 +104,10 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1,
+  },
+  error: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });

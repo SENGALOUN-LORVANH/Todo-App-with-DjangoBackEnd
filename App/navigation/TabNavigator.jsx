@@ -1,47 +1,46 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import LoginScreen from '../auth/LoginScreen';
-import RegisterScreen from '../auth/RegisterScreen';
+import { AuthContext } from '../context/AuthContext';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
 
-const AuthStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Login" component={LoginScreen} />
-    <Stack.Screen name="Register" component={RegisterScreen} />
-  </Stack.Navigator>
-);
+export default function TabNavigator() {
+  const { isAuthenticated, isLoading } = useContext(AuthContext);
+  console.log('Auth Status:', { isAuthenticated, isLoading }); // Debug log
 
-const AppTabs = () => (
-  <Tab.Navigator screenOptions={({ route }) => ({
-    headerShown: false,
-    tabBarIcon: ({ focused, color, size }) => {
-      let iconName;
-      if (route.name === 'Home') {
-        iconName = focused ? 'home' : 'home-outline';
-      } else if (route.name === 'Profile') {
-        iconName = focused ? 'person' : 'person-outline';
-      }
-      return <Ionicons name={iconName} size={24} color={color} />;
-    },
-    tabBarActiveTintColor: '#0066FF',
-    tabBarInactiveTintColor: '#888',
-  })}>
-    <Tab.Screen name="Home" component={HomeScreen} />
-    <Tab.Screen name="Profile" component={ProfileScreen} />
-  </Tab.Navigator>
-);
+  if (isLoading) {
+    return null; // Or a loading screen
+  }
 
-const TabNavigator = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Auth" component={AuthStack} />
-    <Stack.Screen name="App" component={AppTabs} />
-  </Stack.Navigator>
-);
-
-export default TabNavigator;
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+          if (route.name === 'Home') {
+            iconName = 'home';
+          } else if (route.name === 'Profile') {
+            iconName = 'person';
+          }
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#0066FF',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ headerShown: false }}
+      />
+    </Tab.Navigator>
+  );
+}
