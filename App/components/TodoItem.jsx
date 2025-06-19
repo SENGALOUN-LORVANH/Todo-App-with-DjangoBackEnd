@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
 export default function TodoItem({ task, onUpdate, onDelete }) {
@@ -26,63 +36,76 @@ export default function TodoItem({ task, onUpdate, onDelete }) {
   };
 
   return (
-    <View style={styles.container}>
-      {isEditing ? (
-        <View style={styles.editContainer}>
-          <TextInput
-            style={styles.input}
-            value={formData.title}
-            onChangeText={(text) => handleChange('title', text)}
-            placeholder="Title"
-          />
-          <TextInput
-            style={[styles.input, styles.textarea]}
-            value={formData.description}
-            onChangeText={(text) => handleChange('description', text)}
-            placeholder="Description"
-            multiline
-          />
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
-              <Text style={styles.buttonText}>Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setIsEditing(false)}
-            >
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
+    <>
+      {/* Display item */}
+      <View style={styles.container}>
+        <View style={styles.taskContent}>
+          <Text style={styles.text}>{task.title}</Text>
+          {task.description ? (
+            <Text style={styles.description}>{task.description}</Text>
+          ) : null}
+          <Text style={[styles.status, task.completed ? styles.completed : styles.notCompleted]}>
+            {task.completed ? 'Completed' : 'Not Completed'}
+          </Text>
         </View>
-      ) : (
-        <>
-          <View style={styles.taskContent}>
-            <Text style={styles.text}>{task.title}</Text>
-            {task.description ? <Text style={styles.description}>{task.description}</Text> : null}
-            <Text
-              style={[styles.status, task.completed ? styles.completed : styles.notCompleted]}
-            >
-              {task.completed ? 'Completed' : 'Not Completed'}
-            </Text>
+        <View style={styles.icons}>
+          <TouchableOpacity onPress={handleToggle} style={styles.iconButton}>
+            <Feather
+              name={task.completed ? 'check-square' : 'square'}
+              size={24}
+              color="#0066FF"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.iconButton}>
+            <Feather name="edit" size={24} color="#0066FF" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onDelete(task.id)} style={styles.iconButton}>
+            <Ionicons name="trash" size={24} color="#FF4444" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Popup */}
+      <Modal
+        visible={isEditing}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsEditing(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalWrapper}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Task</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.title}
+              onChangeText={(text) => handleChange('title', text)}
+              placeholder="Title"
+            />
+            <TextInput
+              style={[styles.input, styles.textarea]}
+              value={formData.description}
+              onChangeText={(text) => handleChange('description', text)}
+              placeholder="Description"
+              multiline
+            />
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setIsEditing(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.icons}>
-            <TouchableOpacity onPress={handleToggle} style={styles.iconButton}>
-              <Feather
-                name={task.completed ? 'check-square' : 'square'}
-                size={24}
-                color="#0066FF"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.iconButton}>
-              <Feather name="edit" size={24} color="#0066FF" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => onDelete(task.id)} style={styles.iconButton}>
-              <Ionicons name="trash" size={24} color="#FF4444" />
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
-    </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 }
 
@@ -128,8 +151,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  editContainer: {
+
+  // Modal styles
+  modalWrapper: {
     flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 12,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+    color: '#333',
   },
   input: {
     backgroundColor: '#fff',

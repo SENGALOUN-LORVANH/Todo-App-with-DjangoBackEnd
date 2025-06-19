@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // //     ? 'http://10.0.2.2:8000/api/'
 // //     : 'http://127.0.0.1:8000/api/';
 
-const LOCAL_IP = '127.0.0.1'; 
+const LOCAL_IP = '192.168.100.4'; 
 const API_URL = `http://${LOCAL_IP}:8000/api/`;
 
 
