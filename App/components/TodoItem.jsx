@@ -37,7 +37,6 @@ export default function TodoItem({ task, onUpdate, onDelete }) {
 
   return (
     <>
-      {/* Display item */}
       <View style={styles.container}>
         <View style={styles.taskContent}>
           <Text style={styles.text}>{task.title}</Text>
