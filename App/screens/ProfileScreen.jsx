@@ -1,12 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfileScreen({ navigation }) {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const storedUsername = await AsyncStorage.getItem('username');
+      const storedEmail = await AsyncStorage.getItem('email');
+      if (storedUsername) setUsername(storedUsername);
+      if (storedEmail) setEmail(storedEmail);
+    };
+
+    fetchUserInfo();
+  }, []);
+
   const handleLogoutPress = async () => {
     await AsyncStorage.removeItem('access_token');
     await AsyncStorage.removeItem('refresh_token');
+    await AsyncStorage.removeItem('username');
+    await AsyncStorage.removeItem('email');
     navigation.navigate('Login');
   };
 
@@ -18,8 +34,8 @@ export default function ProfileScreen({ navigation }) {
           <Ionicons name="pencil" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
-      <Text style={styles.name}>Same smith</Text>
-      <Text style={styles.email}>Same99@gmail.com</Text>
+      <Text style={styles.name}>{username || 'No Name'}</Text>
+      <Text style={styles.email}>{email || 'No Email'}</Text>
 
       <TouchableOpacity style={styles.option}>
         <Text style={styles.optionText}>Bio</Text>

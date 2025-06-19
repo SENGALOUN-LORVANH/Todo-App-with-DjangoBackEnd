@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { register } from '../services/api';
+import { register, login } from '../services/api'; // login ถูกใช้หลังจาก register สำเร็จ
 
 const RegisterScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -23,7 +23,7 @@ const RegisterScreen = ({ navigation }) => {
       return;
     }
 
-    // Optional: basic email format check
+    // ตรวจสอบรูปแบบอีเมล
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Invalid Email', 'Please enter a valid email address.');
@@ -31,11 +31,23 @@ const RegisterScreen = ({ navigation }) => {
     }
 
     try {
-      const res = await register({ username, email, password });
+      // 1. สมัครบัญชีใหม่
+      await register({ username, email, password });
+
+      // 2. ล็อกอินทันทีหลังสมัคร
+      const res = await login({ username, password });
       const { access, refresh } = res.data;
 
+      if (!access || !refresh) {
+        Alert.alert('Login Failed', 'No token received after registration.');
+        return;
+      }
+
+      // 3. เก็บ token ลง AsyncStorage
       await AsyncStorage.setItem('access_token', access);
       await AsyncStorage.setItem('refresh_token', refresh);
+
+      // 4. ไปหน้า App หลัก
       navigation.navigate('App');
     } catch (err) {
       console.error(err.response?.data || err.message);

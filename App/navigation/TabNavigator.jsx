@@ -9,10 +9,10 @@ const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
-  console.log('Auth Status:', { isAuthenticated, isLoading }); // Debug log
+  console.log('Auth Status:', { isAuthenticated, isLoading }); 
 
   if (isLoading) {
-    return null; // Or a loading screen
+    return null; 
   }
 
   return (

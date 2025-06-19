@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }) {
@@ -23,10 +24,17 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      await handleLogin({ username, password });
+    
+      const response = await handleLogin({ username, password });
+
+      if (response?.username && response?.email) {
+        await AsyncStorage.setItem('username', response.username);
+        await AsyncStorage.setItem('email', response.email);
+      }
+
       navigation.navigate('App');
     } catch (error) {
-      console.log(error.message);
+      console.log('Login error:', error.message);
       Alert.alert('Login Failed', 'Invalid username or password.');
     }
   };
@@ -69,18 +77,53 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB', justifyContent: 'center', paddingHorizontal: 30 },
-  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', color: '#333' },
-  subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 30 },
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    paddingHorizontal: 30,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
   input: {
-    height: 48, backgroundColor: '#fff', borderRadius: 12,
-    paddingHorizontal: 16, marginBottom: 15, borderWidth: 1, borderColor: '#ddd', fontSize: 16,
+    height: 48,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    fontSize: 16,
   },
   button: {
-    backgroundColor: '#0066FF', paddingVertical: 14,
-    borderRadius: 12, alignItems: 'center', marginBottom: 20,
+    backgroundColor: '#0066FF',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  buttonText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
-  linkText: { textAlign: 'center', fontSize: 14, color: '#555' },
-  link: { color: '#0066FF', fontWeight: '600' },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  linkText: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#555',
+  },
+  link: {
+    color: '#0066FF',
+    fontWeight: '600',
+  },
 });

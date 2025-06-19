@@ -7,6 +7,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -14,17 +15,17 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = await AsyncStorage.getItem('access_token');
         const storedUsername = await AsyncStorage.getItem('username');
-        if (token && storedUsername) {
+        const storedEmail = await AsyncStorage.getItem('email');
+        if (token && storedUsername && storedEmail) {
           setIsAuthenticated(true);
           setUsername(storedUsername);
+          setEmail(storedEmail);
         } else {
-          await AsyncStorage.removeItem('access_token');
-          await AsyncStorage.removeItem('username');
+          await AsyncStorage.multiRemove(['access_token', 'refresh_token', 'username', 'email']);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        await AsyncStorage.removeItem('access_token');
-        await AsyncStorage.removeItem('username');
+        await AsyncStorage.multiRemove(['access_token', 'refresh_token', 'username', 'email']);
       } finally {
         setIsLoading(false);
       }
@@ -37,15 +38,21 @@ export const AuthProvider = ({ children }) => {
       console.log('Attempting login with:', credentials);
       const response = await login(credentials);
       console.log('Login response:', response.data);
+
       if (response.data.access && response.data.refresh) {
         await AsyncStorage.setItem('access_token', response.data.access);
         await AsyncStorage.setItem('refresh_token', response.data.refresh);
+
         const userResponse = await getUser();
-        console.log('User response:', userResponse.data);
         const user = userResponse.data;
+
         await AsyncStorage.setItem('username', user.username);
+        await AsyncStorage.setItem('email', user.email);
+
         setUsername(user.username);
+        setEmail(user.email);
         setIsAuthenticated(true);
+
         console.log('Authenticated successfully');
       } else {
         throw new Error('Invalid login response');
@@ -58,11 +65,10 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('access_token');
-      await AsyncStorage.removeItem('refresh_token');
-      await AsyncStorage.removeItem('username');
+      await AsyncStorage.multiRemove(['access_token', 'refresh_token', 'username', 'email']);
       setIsAuthenticated(false);
       setUsername('');
+      setEmail('');
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -92,7 +98,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, handleLogin, handleLogout, isLoading }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, username, email, handleLogin, handleLogout, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );
