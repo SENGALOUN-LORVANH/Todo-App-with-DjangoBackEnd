@@ -29,7 +29,7 @@ export default function ProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Ionicons name="person-circle" size={80} color="" />
+        <Ionicons name="person-circle-outline" size={80} color="" />
         <TouchableOpacity style={styles.editIcon}>
           <Ionicons name="pencil" size={20} color="#fff" />
         </TouchableOpacity>
@@ -99,10 +99,10 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   logoutButton: {
-    backgroundColor: '#FF4444',
+    backgroundColor:'#212f3d',
     paddingVertical: 10,
     paddingHorizontal: 30,
-    borderRadius: 25,
+    borderRadius: 8,
     marginTop: 40,
   },
   logoutText: {

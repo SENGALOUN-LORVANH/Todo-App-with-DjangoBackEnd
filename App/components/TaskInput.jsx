@@ -42,9 +42,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 14,
-    marginHorizontal: 12,
-    marginVertical: 10,
+    padding: 4,
+    marginHorizontal: 5,
+    marginVertical: 5,
     elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.05,
