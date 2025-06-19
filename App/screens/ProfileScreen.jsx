@@ -29,7 +29,7 @@ export default function ProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Ionicons name="person-circle-outline" size={80} color="#0066FF" />
+        <Ionicons name="person-circle" size={80} color="" />
         <TouchableOpacity style={styles.editIcon}>
           <Ionicons name="pencil" size={20} color="#fff" />
         </TouchableOpacity>
